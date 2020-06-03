@@ -1,12 +1,12 @@
 Name:           expect
-BuildRequires:  tcl-devel
-Version:        0
+Version:        5.45.4
 Release:        1
-Group:          Development/Tools
-License:        Public Domain, Freeware
+License:        Public Domain
 Summary:        A Tool for Automating Interactive Programs
-URL:            http://expect.nist.gov
+URL:            https://core.tcl.tk/expect/index
 Source:         %{name}-%{version}.tar.gz
+BuildRequires:  autoconf
+BuildRequires:  tcl-devel
 
 %description
 Expect is a tool primarily for automating interactive applications,
@@ -17,7 +17,6 @@ and FAQs.  There is an entire book on it available from O'Reilly.
 
 %package devel
 License:        Public Domain, Freeware
-Group:          Development/Tools
 Summary:        Header Files and C API Documentation for expect
 
 %description devel
@@ -32,7 +31,7 @@ expect package loaded.
 %setup -q -n %{name}-%{version}
 
 %build
-autoreconf
+%autoreconf
 %configure \
 	--with-tcl=%_libdir \
 	--with-tk=no_tk \
