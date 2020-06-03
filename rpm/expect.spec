@@ -5,6 +5,10 @@ License:        Public Domain
 Summary:        A Tool for Automating Interactive Programs
 URL:            https://core.tcl.tk/expect/index
 Source:         %{name}-%{version}.tar.gz
+Patch1:         expect.patch
+Patch2:         expect-fixes.patch
+Patch3:         expect-log.patch
+Patch4:         config-guess-sub-update.patch
 BuildRequires:  autoconf
 BuildRequires:  tcl-devel
 
@@ -16,7 +20,7 @@ these applications.  It is described in many books, articles, papers,
 and FAQs.  There is an entire book on it available from O'Reilly.
 
 %package devel
-License:        Public Domain, Freeware
+License:        Public Domain
 Summary:        Header Files and C API Documentation for expect
 
 %description devel
@@ -28,39 +32,41 @@ This package is not needed for developing scripts that run under the
 expect package loaded.
 
 %prep
-%setup -q -n %{name}-%{version}
+%autosetup -p0 -n %{name}-%{version}
 
 %build
-%autoreconf
+autoreconf
 %configure \
-	--with-tcl=%_libdir \
+	--with-tcl=%{_libdir} \
 	--with-tk=no_tk \
-	--with-tclinclude=%_includedir \
+	--with-tclinclude=%{_includedir} \
 	--enable-shared
-make %{?_smp_mflags} all pkglibdir=%_libdir/tcl/%name%version
+make %{?_smp_mflags} all pkglibdir=%{_libdir}/tcl/%{name}%{version}
 
 %check
-make test
+make %{?_smp_mflags} test
 
 %install
 # set the right path to the expect binary...
 sed -i \
-    -e '1s,^#![^ ]*expectk,#!/usr/bin/wish\npackage require Expect,' \
-    -e '1s,^#![^ ]*expect,#!/usr/bin/expect,' \
+    -e '1s,^#![^ ]*expectk,#!%{_bindir}/wish\npackage require Expect,' \
+    -e '1s,^#![^ ]*expect,#!%{_bindir}/expect,' \
     example/*
-make install DESTDIR=$RPM_BUILD_ROOT pkglibdir=%_libdir/tcl/%name%version
+make install DESTDIR=%{buildroot} pkglibdir=%{_libdir}/tcl/%{name}%{version}
 # Remove some executables and manpages we don't want to ship
-rm $RPM_BUILD_ROOT%_prefix/bin/*passwd
-rm $RPM_BUILD_ROOT%_mandir/*/*passwd*
+rm %{buildroot}%{_bindir}/*passwd
+rm %{buildroot}%{_bindir}/weather
+rm %{buildroot}%{_mandir}/*/*passwd*
 
 %files
 %defattr(-,root,root)
-%_prefix/bin/*
-%_libdir/tcl/*
-%doc %_mandir/man1/*
+%{_bindir}/*
+%{_libdir}/tcl/*
+%{_libdir}/lib*.so
+%{_mandir}/man1/*
 %doc ChangeLog HISTORY INSTALL FAQ NEWS README
 
 %files devel
 %defattr(-,root,root)
-%_includedir/*
-%doc %_mandir/man3/*
+%{_includedir}/*
+%{_mandir}/man3/*
